@@ -58,20 +58,20 @@ pipeline {
         stage('Build & Tag Docker Image') {
             steps {
                 script{
-                    docker.build("${DOCKER_REGISTRY}/boardgame:${IMAGE_TAG}")
+                    docker.build("${NEXUS_SERVER}/boardgame:${IMAGE_TAG}")
                 }
             }
         }
         stage('Docker Image Scan') {
             steps {
-                sh "trivy image --format table -o trivy-image-report.html ${DOCKER_REGISTRY}/boardgame:${IMAGE_TAG}"
+                sh "trivy image --format table -o trivy-image-report.html ${NEXUS_SERVER}/boardgame:${IMAGE_TAG}"
             }
         }
         stage("push Docker Image to nexus"){
             steps{
                script {
                     withDockerRegistry([url: "${NEXUS_SERVER}", credentialsId: "nexus"]) {
-                        docker.image("${DOCKER_REGISTRY}/boardgame:${IMAGE_TAG}").push()
+                        docker.image("${NEXUS_SERVER}/boardgame:${IMAGE_TAG}").push()
                     }
                }
             }
