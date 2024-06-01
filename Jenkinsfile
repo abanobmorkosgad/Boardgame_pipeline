@@ -28,8 +28,7 @@ pipeline {
         stage("sonarqube analysis"){
             steps{
                 withSonarQubeEnv("sonar") {
-                    ''' $SCANNER_HOME/bin/sonar-scanner -Dsonar.projectName=BoardGame -Dsonar.projectKey=BoardGame \
-                            -Dsonar.java.binaries=. '''
+                    "$SCANNER_HOME/bin/sonar-scanner -Dsonar.projectName=BoardGame -Dsonar.projectKey=BoardGame -Dsonar.java.binaries=."
                 }
             }
         }
@@ -52,7 +51,9 @@ pipeline {
         }
         stage('Build & Tag Docker Image') {
             steps {
-               docker.build("${DOCKER_REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG}")
+                script{
+                    docker.build("${DOCKER_REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG}")
+                }
             }
         }
         stage('Docker Image Scan') {
