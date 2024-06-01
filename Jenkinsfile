@@ -69,7 +69,7 @@ pipeline {
         stage("push Docker Image to nexus"){
             steps{
                script {
-                    withDockerRegistry([url: "${DOCKER_REGISTRY}", credentialsId: "nexus"]) {
+                    withDockerRegistry([url: "http://${DOCKER_REGISTRY}", credentialsId: "nexus"]) {
                         docker.image("${DOCKER_REGISTRY}/boardgame:${IMAGE_TAG}").push()
                     }
                }
