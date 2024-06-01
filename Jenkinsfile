@@ -6,7 +6,7 @@ pipeline {
     }
     environment {
         SCANNER_HOME= tool "sonar"
-        DOCKER_REGISTRY="http://54.152.129.4:8081/repository/docker/"
+        DOCKER_REGISTRY="http://54.152.129.4:8081/repository/docker"
         IMAGE_TAG="${BUILD_NUMBER}"
     }
     stages{
