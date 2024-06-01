@@ -6,6 +6,7 @@ pipeline {
     }
     environment {
         SCANNER_HOME= tool "sonar"
+        NEXUS_SERVER="54.152.129.4:8081"
         DOCKER_REGISTRY="54.152.129.4:8081/repository/docker"
         IMAGE_TAG="${BUILD_NUMBER}"
     }
@@ -69,7 +70,7 @@ pipeline {
         stage("push Docker Image to nexus"){
             steps{
                script {
-                    withDockerRegistry([url: "http://${DOCKER_REGISTRY}", credentialsId: "nexus"]) {
+                    withDockerRegistry([url: "${NEXUS_SERVER}", credentialsId: "nexus"]) {
                         docker.image("${DOCKER_REGISTRY}/boardgame:${IMAGE_TAG}").push()
                     }
                }
