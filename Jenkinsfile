@@ -57,7 +57,7 @@ pipeline {
         stage('Build & Tag Docker Image') {
             steps {
                 script{
-                    docker.build("${DOCKER_REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG}")
+                    docker.build("${DOCKER_REGISTRY}/boardgame:${IMAGE_TAG}")
                 }
             }
         }
@@ -70,7 +70,7 @@ pipeline {
             steps{
                script {
                     withDockerRegistry([url: "${DOCKER_REGISTRY}", credentialsId: "nexus"]) {
-                        docker.image("${DOCKER_REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG}").push()
+                        docker.image("${DOCKER_REGISTRY}/boardgame:${IMAGE_TAG}").push()
                     }
                }
             }
