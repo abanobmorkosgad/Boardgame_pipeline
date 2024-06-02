@@ -53,8 +53,9 @@ The Jenkins pipeline performs the following steps:
 
 ## Tools and Technologies
 
-- **JDK 17**
-- **Maven 3**
+- **JDK**
+- **Maven**
+- **Jenkins**: For Pipeline
 - **SonarQube**: For static code analysis.
 - **Trivy**: For filesystem and Docker image scanning.
 - **Nexus**: For artifact and Docker image storage.
