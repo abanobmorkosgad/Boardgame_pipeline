@@ -75,6 +75,8 @@ Trigger the pipeline to start the build, test, scan, and deployment process.
 ### Check Reports
 Review the Trivy reports and SonarQube analysis for any issues.
 
+### Set up Monitoring Server
+
 ### Monitor Kubernetes Cluster with Prometheus
 
 #### Install Node Exporter using Helm
