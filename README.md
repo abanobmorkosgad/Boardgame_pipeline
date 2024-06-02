@@ -44,6 +44,9 @@ The Jenkins pipeline performs the following steps:
 12. **Deploy to EKS Cluster**
     - Deploys the updated application to the EKS cluster.
 
+13. **Send an Email**
+    - Send an Email with the result of the pipeline execution
+
 ## Environment Variables
 
 - `SCANNER_HOME`: Path to the SonarQube scanner.
