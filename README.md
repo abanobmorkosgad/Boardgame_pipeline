@@ -77,7 +77,7 @@ Review the Trivy reports and SonarQube analysis for any issues.
 
 ### Monitor Kubernetes Cluster with Prometheus
 
-## Install Node Exporter using Helm
+#### Install Node Exporter using Helm
 
 1. Add the Prometheus Community Helm repository:
 
