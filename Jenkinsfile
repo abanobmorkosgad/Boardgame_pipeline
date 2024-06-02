@@ -11,21 +11,25 @@ pipeline {
         IMAGE_TAG="${BUILD_NUMBER}"
     }
     stages{
+
         stage("compile code"){
             steps{
                 sh "mvn compile"
             }
         }
+
         stage("test code"){
             steps{
                 sh "mvn test"
             }
         }
+
         stage("check filesystem"){
             steps{
                 sh "trivy fs --format table -o trivy-fs-report.html ."
             }
         }
+
         stage("sonarqube analysis"){
             steps{
                 withSonarQubeEnv("sonar") {
@@ -38,16 +42,19 @@ pipeline {
                 }
             }
         }
+
         stage("quality gate"){
             steps{
                 waitForQualityGate abortPipeline: false, credentialsId: 'sonarqube'
             }
         }
+
         stage("build code"){
             steps{
                 sh "mvn package"
             }
         }
+
         stage("push to nexus"){
             steps{
                 withMaven(globalMavenSettingsConfig: 'global-settings', jdk: 'jdk17', maven: 'maven3', mavenSettingsConfig: '', traceability: true) {
@@ -55,6 +62,7 @@ pipeline {
                 }
             }
         }
+
         stage('Build & Tag Docker Image') {
             steps {
                 script{
@@ -62,11 +70,13 @@ pipeline {
                 }
             }
         }
+
         stage('Docker Image Scan') {
             steps {
                 sh "trivy image --format table -o trivy-image-report.html ${NEXUS_SERVER}/boardgame:${IMAGE_TAG}"
             }
         }
+
         stage("push Docker Image to nexus"){
             steps{
                script {
@@ -76,24 +86,28 @@ pipeline {
                }
             }
         }
-        stage("change image version in k8s") {
+
+        stage("change image version in k8s manifest") {
             steps {
                 script {
-                    sh "sed -i \"s|image:.*|image: ${NEXUS_SERVER}/boardgame:${IMAGE_TAG}|g\" deployment-service.yaml"
+                    sh "sed -i \"s|image:.*|image: ${NEXUS_SERVER}/boardgame:${IMAGE_TAG}|g\" k8s/deployment-service.yaml"
                 }
             }
         }
+
          stage('Deploy to eks cluster') {
             steps {
                 echo 'Deploying to eks cluster ... '
                 withCredentials([file(credentialsId:'kube-config', variable:'KUBECONFIG')]){
                     script{
-                        sh 'kubectl apply -f deployment-service.yaml'
+                        sh 'kubectl apply -f k8s/deployment-service.yaml'
                     }
                 }
             }
         }
+
     }
+
     post {
      always {
         emailext attachLog: true,
@@ -105,4 +119,5 @@ pipeline {
             attachmentsPattern: 'trivy-image-report.html'
         }
     }
+    
 }
