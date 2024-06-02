@@ -64,6 +64,7 @@ The Jenkins pipeline performs the following steps:
 - **Nexus**: For artifact and Docker image storage.
 - **Docker**: For containerizing the application.
 - **Kubernetes**: For deploying the application.
+- **Helm**: For deploying node-exporter of prometheus
 - **Prometheus,Grafana**: For Monitoring 
 
 
