@@ -2,6 +2,8 @@
 
 This project demonstrates a CI/CD pipeline for a Java Maven application called BoardGame. The pipeline is implemented using Jenkins and incorporates several tools and stages to ensure code quality, security, and automated deployment.
 
+![Project Architecture](./Animation.gif)
+
 ## Pipeline Overview
 
 The Jenkins pipeline performs the following steps:
