@@ -1,53 +1,191 @@
-# BoardgameListingWebApp
+# BoardGame Project CI/CD Pipeline
 
-## Description
+This project demonstrates a CI/CD pipeline for a Java Maven application called BoardGame. The pipeline is implemented using Jenkins and incorporates several tools and stages to ensure code quality, security, and automated deployment.
 
-**Board Game Database Full-Stack Web Application.**
-This web application displays lists of board games and their reviews. While anyone can view the board game lists and reviews, they are required to log in to add/ edit the board games and their reviews. The 'users' have the authority to add board games to the list and add reviews, and the 'managers' have the authority to edit/ delete the reviews on top of the authorities of users.  
+## Pipeline Overview
 
-## Technologies
+The Jenkins pipeline performs the following steps:
 
-- Java
-- Spring Boot
-- Amazon Web Services(AWS) EC2
-- Thymeleaf
-- Thymeleaf Fragments
-- HTML5
-- CSS
-- JavaScript
-- Spring MVC
-- JDBC
-- H2 Database Engine (In-memory)
-- JUnit test framework
-- Spring Security
-- Twitter Bootstrap
-- Maven
+1. **Compile Code**
+   - Compiles the Java code using Maven.
+   
+2. **Test Code**
+   - Runs the unit tests using Maven.
+   
+3. **Filesystem Scan**
+   - Scans the filesystem using Trivy and generates an HTML report.
+   
+4. **SonarQube Analysis**
+   - Runs static code analysis using SonarQube.
+   
+5. **Quality Gate**
+   - Waits for the SonarQube quality gate result.
+   
+6. **Build Code**
+   - Packages the application using Maven.
+   
+7. **Push to Nexus**
+   - Deploys the Maven artifact to Nexus.
+   
+8. **Build & Tag Docker Image**
+   - Builds and tags the Docker image.
+   
+9. **Docker Image Scan**
+   - Scans the Docker image using Trivy and generates an HTML report.
+   
+10. **Push Docker Image to Nexus**
+    - Pushes the Docker image to Nexus.
+    
+11. **Change Image Version in Kubernetes**
+    - Updates the Kubernetes deployment YAML file with the new Docker image tag.
+    
+12. **Deploy to EKS Cluster**
+    - Deploys the updated application to the EKS cluster.
 
-## Features
+## Environment Variables
 
-- Full-Stack Application
-- UI components created with Thymeleaf and styled with Twitter Bootstrap
-- Authentication and authorization using Spring Security
-  - Authentication by allowing the users to authenticate with a username and password
-  - Authorization by granting different permissions based on the roles (non-members, users, and managers)
-- Different roles (non-members, users, and managers) with varying levels of permissions
-  - Non-members only can see the boardgame lists and reviews
-  - Users can add board games and write reviews
-  - Managers can edit and delete the reviews
-- Deployed the application on AWS EC2
-- JUnit test framework for unit testing
-- Spring MVC best practices to segregate views, controllers, and database packages
-- JDBC for database connectivity and interaction
-- CRUD (Create, Read, Update, Delete) operations for managing data in the database
-- Schema.sql file to customize the schema and input initial data
-- Thymeleaf Fragments to reduce redundancy of repeating HTML elements (head, footer, navigation)
+- `SCANNER_HOME`: Path to the SonarQube scanner.
+- `NEXUS_SERVER`: Nexus server address.
+- `DOCKER_REGISTRY`: Docker registry URL.
+- `IMAGE_TAG`: Docker image tag, typically the Jenkins build number.
 
-## How to Run
+## Tools and Technologies
 
-1. Clone the repository
-2. Open the project in your IDE of choice
-3. Run the application
-4. To use initial user data, use the following credentials.
-  - username: bugs    |     password: bunny (user role)
-  - username: daffy   |     password: duck  (manager role)
-5. You can also sign-up as a new user and customize your role to play with the application! 😊
+- **JDK 17**
+- **Maven 3**
+- **SonarQube**: For static code analysis.
+- **Trivy**: For filesystem and Docker image scanning.
+- **Nexus**: For artifact and Docker image storage.
+- **Docker**: For containerizing the application.
+- **Kubernetes**: For deploying the application.
+
+## Jenkins Pipeline Script
+
+Here is the complete Jenkins pipeline script used in this project:
+
+```groovy
+pipeline {
+    agent any 
+    tools {
+        jdk "jdk17"
+        maven "maven3"
+    }
+    environment {
+        SCANNER_HOME= tool "sonar"
+        NEXUS_SERVER="54.152.129.4:8082"
+        DOCKER_REGISTRY="54.152.129.4:8082/repository/docker"
+        IMAGE_TAG="${BUILD_NUMBER}"
+    }
+    stages{
+        stage("compile code"){
+            steps{
+                sh "mvn compile"
+            }
+        }
+        stage("test code"){
+            steps{
+                sh "mvn test"
+            }
+        }
+        stage("check filesystem"){
+            steps{
+                sh "trivy fs --format table -o trivy-fs-report.html ."
+            }
+        }
+        stage("sonarqube analysis"){
+            steps{
+                withSonarQubeEnv("sonar") {
+                    sh """
+                    ${SCANNER_HOME}/bin/sonar-scanner \
+                    -Dsonar.projectName=BoardGame \
+                    -Dsonar.projectKey=BoardGame \
+                    -Dsonar.java.binaries=.
+                    """
+                }
+            }
+        }
+        stage("quality gate"){
+            steps{
+                waitForQualityGate abortPipeline: false, credentialsId: 'sonarqube'
+            }
+        }
+        stage("build code"){
+            steps{
+                sh "mvn package"
+            }
+        }
+        stage("push to nexus"){
+            steps{
+                withMaven(globalMavenSettingsConfig: 'global-settings', jdk: 'jdk17', maven: 'maven3', mavenSettingsConfig: '', traceability: true) {
+                    sh "mvn deploy"
+                }
+            }
+        }
+        stage('Build & Tag Docker Image') {
+            steps {
+                script{
+                    docker.build("${NEXUS_SERVER}/boardgame:${IMAGE_TAG}")
+                }
+            }
+        }
+        stage('Docker Image Scan') {
+            steps {
+                sh "trivy image --format table -o trivy-image-report.html ${NEXUS_SERVER}/boardgame:${IMAGE_TAG}"
+            }
+        }
+        stage("push Docker Image to nexus"){
+            steps{
+               script {
+                    withDockerRegistry([url: "http://${NEXUS_SERVER}", credentialsId: "nexus"]) {
+                        docker.image("${NEXUS_SERVER}/boardgame:${IMAGE_TAG}").push()
+                    }
+               }
+            }
+        }
+        stage("change image version in k8s") {
+            steps {
+                script {
+                    sh "sed -i \"s|image:.*|image: ${NEXUS_SERVER}/boardgame:${IMAGE_TAG}|g\" deployment-service.yaml"
+                }
+            }
+        }
+         stage('Deploy to eks cluster') {
+            steps {
+                echo 'Deploying to eks cluster ... '
+                withCredentials([file(credentialsId:'kube-config', variable:'KUBECONFIG')]){
+                    script{
+                        sh 'kubectl apply -f deployment-service.yaml'
+                    }
+                }
+            }
+        }
+    }
+    post {
+     always {
+        emailext attachLog: true,
+            subject: "'${currentBuild.result}'",
+            body: "Project: ${env.JOB_NAME}<br/>" +
+                  "Build Number: ${env.BUILD_NUMBER}<br/>" +
+                  "URL: ${env.BUILD_URL}<br/>",
+            to: 'abanobmorkos13@gmail.com',                                
+            attachmentsPattern: 'trivy-image-report.html'
+        }
+    }
+}
+```
+
+
+## Usage
+
+### Set up Jenkins
+1. Install the necessary tools and plugins in Jenkins.
+2. Configure the environment variables and credentials.
+
+### Run the Pipeline
+Trigger the pipeline to start the build, test, scan, and deployment process.
+
+### Check Reports
+Review the Trivy reports and SonarQube analysis for any issues.
+
+### Monitor Deployment
+Ensure the application is successfully deployed to the EKS cluster.

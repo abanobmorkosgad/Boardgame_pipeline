@@ -76,5 +76,33 @@ pipeline {
                }
             }
         }
+        stage("change image version in k8s") {
+            steps {
+                script {
+                    sh "sed -i \"s|image:.*|image: ${NEXUS_SERVER}/boardgame:${IMAGE_TAG}|g\" deployment-service.yaml"
+                }
+            }
+        }
+         stage('Deploy to eks cluster') {
+            steps {
+                echo 'Deploying to eks cluster ... '
+                withCredentials([file(credentialsId:'kube-config', variable:'KUBECONFIG')]){
+                    script{
+                        sh 'kubectl apply -f deployment-service.yaml'
+                    }
+                }
+            }
+        }
+    }
+    post {
+     always {
+        emailext attachLog: true,
+            subject: "'${currentBuild.result}'",
+            body: "Project: ${env.JOB_NAME}<br/>" +
+                  "Build Number: ${env.BUILD_NUMBER}<br/>" +
+                  "URL: ${env.BUILD_URL}<br/>",
+            to: 'abanobmorkos13@gmail.com',                                
+            attachmentsPattern: 'trivy-image-report.html'
+        }
     }
 }
