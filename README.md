@@ -76,6 +76,8 @@ Trigger the pipeline to start the build, test, scan, and deployment process.
 Review the Trivy reports and SonarQube analysis for any issues.
 
 ### Set up Monitoring Server
+1. Install prometheus and Grafana
+2. Import dashboards in Grafana
 
 ### Monitor Kubernetes Cluster with Prometheus
 
