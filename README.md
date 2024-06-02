@@ -65,6 +65,10 @@ The Jenkins pipeline performs the following steps:
 
 ## Usage
 
+### Terraform
+1. Navigate to the `terraform_eks` directory and initialize Terraform
+2. Apply the Terraform configuration to set up the EKS Cluster
+
 ### Set up Jenkins
 1. Install the necessary tools and plugins in Jenkins.
 2. Configure the environment variables and credentials.
