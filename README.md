@@ -59,6 +59,7 @@ The Jenkins pipeline performs the following steps:
 - **JDK**
 - **Maven**
 - **Jenkins**: For Pipeline
+- **Terraform**: For provisioning kubernetes cluster
 - **SonarQube**: For static code analysis.
 - **Trivy**: For filesystem and Docker image scanning.
 - **Nexus**: For artifact and Docker image storage.
