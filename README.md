@@ -70,30 +70,29 @@ The Jenkins pipeline performs the following steps:
 
 ## Usage
 
-### Terraform
+### 1- Terraform
 1. Navigate to the `terraform_eks` directory and initialize Terraform
 2. Apply the Terraform configuration to set up the EKS Cluster
 
-### Set up Sonarqube
+### 2- Set up Sonarqube
 
-### Set up Nexus
+### 3- Set up Nexus
 
-### Set up Jenkins
+### 4- Set up Jenkins
 1. Install the necessary tools and plugins in Jenkins.
 2. Configure the environment variables and credentials.
 
-### Run the Pipeline
+### 5- Run the Pipeline
 Trigger the pipeline to start the build, test, scan, and deployment process.
 
-### Check Reports
+### 6- Check Reports
 Review the Trivy reports and SonarQube analysis for any issues.
 
-### Set up Monitoring Server
+### 7- Set up Monitoring Server
 1. Install prometheus and Grafana
 2. Import dashboards in Grafana
 
-### Monitor Kubernetes Cluster with Prometheus
-
+### 8- Monitor Kubernetes Cluster with Prometheus
 #### Install Node Exporter using Helm
 
 1. Add the Prometheus Community Helm repository:
