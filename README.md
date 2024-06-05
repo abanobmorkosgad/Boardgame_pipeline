@@ -66,7 +66,7 @@ The Jenkins pipeline performs the following steps:
 - **Docker**: For containerizing the application.
 - **Kubernetes**: For deploying the application.
 - **Helm**: For deploying node-exporter of prometheus
-- **Prometheus,Grafana**: For Monitoring 
+- **Prometheus, Grafana**: For Monitoring 
 
 
 ## Usage
